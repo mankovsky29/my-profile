@@ -35,7 +35,13 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
         tags: tag:ci
         override-local-dns: true # Forces the VM to instantly respect Tailscale routes
-        
+
+# 4.5 Network Diagnostics (Temporary debugging step)
+    - name: Diagnose Network Connection to NAS
+      run: |
+        ping -c 3 ${{ secrets.NAS_TAILSCALE_IP }} || echo "Ping failed"
+        nc -zv -w 5 ${{ secrets.NAS_TAILSCALE_IP }} 22 || echo "Port 22 is closed/unreachable"
+
 # 5. Securely copy files natively via SSH/SFTP (Inherits the Tailscale tunnel)
     - name: Deploy to Synology NAS via SFTP
       uses: appleboy/scp-action@v1
