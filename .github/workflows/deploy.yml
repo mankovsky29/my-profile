@@ -35,9 +35,9 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
         tags: tag:ci
 
-    # 5. Securely copy files natively via SSH/SFTP (Inherits the Tailscale tunnel)
+# 5. Securely copy files natively via SSH/SFTP (Inherits the Tailscale tunnel)
     - name: Deploy to Synology NAS via SFTP
-      uses: appleboy/scp-action@v1.0.1
+      uses: appleboy/scp-action@v1
       with:
         host: ${{ secrets.NAS_TAILSCALE_IP }}
         username: ${{ secrets.NAS_USERNAME }}
@@ -46,4 +46,4 @@ jobs:
         source: "dist/*"                     # The local files to copy
         target: "/volume1/web/portfolio"      # The target path on your NAS
         strip_components: 1                  # Prevents creating a literal "dist" folder inside "portfolio"
-        overwrite: true                      # Overwrites existing static assets
+        overwrite: true                      # Overwrites existing static assets                # Overwrites existing static assets
