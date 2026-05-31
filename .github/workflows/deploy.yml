@@ -1,6 +1,5 @@
 name: Build and Secure Deploy Portfolio to Synology
 
-# This dictates when the pipeline runs. In this case, whenever you push code to 'main'
 on:
   push:
     branches:
@@ -8,27 +7,27 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest # Tells GitHub to give us a clean, free Ubuntu cloud VM
+    runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Clone your repository onto the cloud VM
+    # 1. Checkout the repository code
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # Step 2: Install Node.js so we can run npm commands
+    # 2. Set up Node.js environment
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 20
         cache: 'npm'
 
-    # Step 3: Install dependencies and build your static web files
+    # 3. Install dependencies and build production static files
     - name: Install and Build React App
       run: |
         npm install
         npm run build 
 
-    # Step 4: Connect the cloud VM directly to your private Tailscale network
+    # 4. Connect the cloud VM directly to your private Tailscale network
     - name: Connect to Tailscale
       uses: tailscale/github-action@v3
       with:
@@ -36,14 +35,14 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
         tags: tag:ci
 
-    # Step 5: Securely copy the files directly to your home NAS over the VPN
+    # 5. Securely copy files natively via Node (Shares the Tailscale tunnel)
     - name: Deploy to Synology NAS via SFTP
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.NAS_TAILSCALE_IP }}
-        port: 22 
         username: ${{ secrets.NAS_USERNAME }}
-        password: ${{ secrets.NAS_PASSWORD }} 
-        local_path: './dist/*'  # Change to './build/*' if your project builds into a 'build' folder
-        remote_path: '/volume1/web/portfolio' # The absolute path on your Synology NAS filesystem
-        delete_remote_files: false
+        password: ${{ secrets.NAS_PASSWORD }}
+        port: 22
+        protocol: sftp
+        local-dir: ./dist/   # Ensure this matches your build directory (e.g., ./build/ or ./dist/)
+        server-dir: /volume1/web/portfolio/
